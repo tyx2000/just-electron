@@ -1,25 +1,10 @@
 const handleSocketMessage = (data) => {
   console.log("socket message", data);
-  switch (data.type) {
-    case "notification":
-      break;
-    case "chat":
-      break;
-    case "created-room":
-      break;
-    case "joined-room":
-      break;
-    case "offer":
-      break;
-    case "answer":
-      break;
-    case "candidate":
-      break;
-    case "error":
-      break;
-    default:
-      console.log("unknown message type");
-      break;
+
+  if (data.type === "chat-message") {
+    console.log("chat-message", data);
+  } else {
+    return;
   }
 };
 

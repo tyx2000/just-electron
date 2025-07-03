@@ -52,11 +52,17 @@ module.exports = {
       modal: true,
       show: false,
       webPreferences: {
+        // 每个BrowserWindow实例都有自己独立的渲染进程和全局对象window
+        // 即使使用相同的预加载脚本，他们在不同窗口中也是相互隔离的
+        // 每个预加载脚本可以通过exposeInMainWorld在各自窗口的window对象上添加属性，不会影响其他窗口
+        // 如果多个预加载脚本使用相同的名称，他们在各自窗口中是独立的
         preload: path.join(__dirname, "preload.js"),
       },
     });
 
-    meetingWindow.loadFile("./meeting.html");
+    meetingWindow.loadFile("./meeting.html", {
+      // query: { socketId: encodeURIComponent(clientIds.mainScoketId) },
+    });
 
     meetingWindow.on("maximize", () => {
       console.log("meeting max");
