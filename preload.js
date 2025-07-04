@@ -1,8 +1,8 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("api", {
-  createWebSocketConnection: () =>
-    ipcRenderer.invoke("createWebSocketConnection"),
+  createWebSocketConnection: (type) =>
+    ipcRenderer.invoke("createWebSocketConnection", type),
   // state Open Close Error
   onWebSocketStateActive: (socketId, state, callback) => {
     const eventName = `webSocket${socketId}${state}`;

@@ -1,6 +1,6 @@
 const path = require("node:path");
 const { BrowserWindow, app, session, desktopCapturer } = require("electron");
-const registerIpc = require("./registerIpc");
+const registerIpc = require("./register-ipc");
 
 function createWindow() {
   const win = new BrowserWindow({

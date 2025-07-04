@@ -5,9 +5,9 @@ const path = require("node:path");
 const clients = new Map();
 
 module.exports = {
-  createWebSocketConnection: (event) => {
+  createWebSocketConnection: (event, type) => {
     return new Promise((resolve, reject) => {
-      const socketId = Math.random().toString(36).slice(2);
+      const socketId = `${type}-${Math.random().toString(36).slice(2)}`;
       console.log("createWebSocketConnection", socketId);
 
       try {
@@ -39,11 +39,19 @@ module.exports = {
     });
   },
 
-  sendWebSocketMessage: () => {
-    console.log("send websocket message");
+  sendWebSocketMessage: async (_, socketId, data) => {
+    console.log("send websocket message", socketId, data);
+
+    const socket = clients.get(socketId);
+    if (socket && socket.readyState === 1) {
+      socket.send(JSON.stringify(data));
+      return true;
+    } else {
+      return false;
+    }
   },
 
-  closeWebSocketConnection: () => {},
+  closeWebSocketConnection: (_, socketId) => {},
 
   showMeetingWindow: () => {
     const meetingWindow = new BrowserWindow({

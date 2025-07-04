@@ -10,7 +10,7 @@ const handleSocketMessage = (data) => {
 
 window.addEventListener("DOMContentLoaded", async () => {
   try {
-    const socketId = await window.api.createWebSocketConnection();
+    const socketId = await window.api.createWebSocketConnection("text");
 
     window.api.onWebSocketStateActive(socketId, "Open", (socketId) => {
       console.log("websocket OPEN", socketId);

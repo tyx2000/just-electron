@@ -1,5 +1,5 @@
 class WebRTCClient {
-  constructor(signalingServerUrl, options = {}) {
+  constructor(socketId, options = {}) {
     this.roomId = null;
     this.mediaRecorder = null;
     // stun server conf
@@ -19,10 +19,11 @@ class WebRTCClient {
     this.dataChannel = null;
 
     // signaling server
-    this.signalingServerUrl = signalingServerUrl;
+    this.signalingServerUrl = "ws://localhost:8080";
     this.socket = null;
-    this.socketId = null;
+    this.socketId = socketId;
     this.isInitiator = false;
+    this.sendToSignalingServer = options.sendToSignalingServer || (() => {});
 
     // callback
     this.onLocalStream = options.onLocalStream || (() => {});
@@ -36,7 +37,7 @@ class WebRTCClient {
     this.onIceGatheringStateChange =
       options.onIceGatheringStateChange || (() => {});
 
-    this.init();
+    // this.init();
   }
 
   log(text) {
@@ -137,16 +138,17 @@ class WebRTCClient {
   }
 
   sendToRemote(data) {
-    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-      this.socket.send(
-        JSON.stringify({
-          ...data,
-          roomId: this.roomId,
-        }),
-      );
-    } else {
-      this.log("signaling server error");
-    }
+    this.sendToSignalingServer(this.socketId, data);
+    // if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+    //   this.socket.send(
+    //     JSON.stringify({
+    //       ...data,
+    //       roomId: this.roomId,
+    //     }),
+    //   );
+    // } else {
+    //   this.log("signaling server error");
+    // }
   }
 
   async createOffer() {
@@ -536,5 +538,3 @@ class WebRTCClient {
     }
   }
 }
-
-const client = new WebRTCClient("ws://localhost:8080");

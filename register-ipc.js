@@ -4,7 +4,7 @@ const {
   sendWebSocketMessage,
   closeWebSocketConnection,
   showMeetingWindow,
-} = require("./ipcService");
+} = require("./ipc-service");
 
 module.exports = function () {
   ipcMain.handle("createWebSocketConnection", createWebSocketConnection);
@@ -14,9 +14,4 @@ module.exports = function () {
   ipcMain.handle("closeWebSocketMessage", closeWebSocketConnection);
 
   ipcMain.handle("showMeetingWindow", showMeetingWindow);
-
-  ipcMain.on("meetingInvoke", (a, b, c) => {
-    console.log("meetingInvoke", { a, b, c });
-    ipcRenderer.send("meetingInvokeReply", 1, 2, 3);
-  });
 };
