@@ -24,5 +24,6 @@ contextBridge.exposeInMainWorld("api", {
       });
     };
   },
+
   showMeetingWindow: () => ipcRenderer.invoke("showMeetingWindow"),
 });

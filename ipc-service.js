@@ -88,6 +88,4 @@ module.exports = {
 
     meetingWindow.show();
   },
-
-  meetingInvoke: () => {},
 };
