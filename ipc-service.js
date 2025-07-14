@@ -68,9 +68,7 @@ module.exports = {
       },
     });
 
-    meetingWindow.loadFile("./meeting.html", {
-      // query: { socketId: encodeURIComponent(clientIds.mainScoketId) },
-    });
+    meetingWindow.loadURL("http://mirror.yamazaki.buzz");
 
     meetingWindow.on("maximize", () => {
       console.log("meeting max");

@@ -1,7 +1,6 @@
 const path = require("node:path");
 const { BrowserWindow, app, session, desktopCapturer } = require("electron");
 const registerIpc = require("./register-ipc");
-const registerRTCIpc = require("./register-rtc-ipc");
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -21,7 +20,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
   registerIpc();
-  registerRTCIpc();
 
   createWindow();
 
