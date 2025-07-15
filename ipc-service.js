@@ -68,7 +68,9 @@ module.exports = {
       },
     });
 
-    meetingWindow.loadURL("http://mirror.yamazaki.buzz");
+    // cloudflare SSL/TLS flexible
+    // 另外 http下 getDisplayMedia失效
+    meetingWindow.loadURL("https://mirror.yamazaki.buzz");
 
     meetingWindow.on("maximize", () => {
       console.log("meeting max");
