@@ -3,16 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hello World</title>
+    <title>Instance Incognito</title>
+    <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
-    <h1>hello World</h1>
-    <p>
-      We are using Node.js <span id="node-version"></span>, Chromium
-      <span id="chrome-version"></span>, and Electron
-      <span id="electron-version"></span>.
-    </p>
-    <button id="setting-button">Setting</button>
+    <div id="messages">
+      <div class="receivedMessage">
+        <div class="messageInfo">aidb 2012-12-12 12:12:12</div>
+        <div class="messageContent">nihao</div>
+      </div>
+      <div class="sentMessage">
+        <div class="messageInfo">adib 2012-12-12 12:12:12</div>
+        <div class="messageContent">hello</div>
+      </div>
+      <div class="sentMessage">
+        <div class="messageInfo">adib 2012-12-12 12:12:12</div>
+        <div class="messageContent">
+          createWebSocketConnection text-5ry6mu7tgkg
+          [65680:0716/165832.921816:ERROR:CONSOLE:1] "Request Autofill.enable
+          failed. {"code":-32601,"message":"'Autofill.enable' wasn't found"}",
+          source:
+          devtools://devtools/bundled/core/protocol_client/protocol_client.js
+          (1) hello
+        </div>
+      </div>
+    </div>
+    <div id="divider"></div>
+    <div id="inputBox">
+      <textarea name="message-input" id="messageInput"></textarea>
+    </div>
+    <!-- <button id="setting-button">Setting</button> -->
     <script src="./renderer.js"></script>
   </body>
 </html>
