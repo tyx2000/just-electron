@@ -26,4 +26,6 @@ contextBridge.exposeInMainWorld("api", {
   },
 
   showMeetingWindow: () => ipcRenderer.invoke("showMeetingWindow"),
+
+  queryMessageFromDB: () => ipcRenderer.invoke("queryMessageFromDB"),
 });

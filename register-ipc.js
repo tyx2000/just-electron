@@ -1,9 +1,10 @@
-const { ipcMain, ipcRenderer } = require("electron");
+const { ipcMain } = require("electron");
 const {
   createWebSocketConnection,
   sendWebSocketMessage,
   closeWebSocketConnection,
   showMeetingWindow,
+  queryMessageFromDB,
 } = require("./ipc-service");
 
 module.exports = function () {
@@ -14,4 +15,6 @@ module.exports = function () {
   ipcMain.handle("closeWebSocketMessage", closeWebSocketConnection);
 
   ipcMain.handle("showMeetingWindow", showMeetingWindow);
+
+  ipcMain.handle("queryMessageFromDB", queryMessageFromDB);
 };

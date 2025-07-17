@@ -12,10 +12,11 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^37.1.0"
+    "electron": "^28.3.3",
+    "electron-rebuild": "^3.2.9"
   },
   "dependencies": {
-    "better-sqlite3": "^12.2.0",
+    "better-sqlite3": "^11.10.0",
     "ws": "^8.18.3"
   }
 }

@@ -1,23 +1,31 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  overflow-x: hidden;
+}
+
+#container {
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
   background-color: #f0f0f0;
-  margin: 0;
-  box-sizing: border-box;
 }
 
 #messages {
-  height: 60%;
   width: 100%;
-  min-height: 50%;
-  max-height: 70%;
-  overflow-y: auto;
+  height: 70%;
   background-color: #fff;
   display: flex;
   flex-direction: column;
+  overflow: hidden auto;
+  padding: 10px;
 }
 
 .receivedMessage,
@@ -40,6 +48,7 @@ body {
     background-color: lightblue;
     padding: 5px 10px;
     border-radius: 10px;
+    margin-bottom: 5px;
   }
 }
 
@@ -55,15 +64,12 @@ body {
   height: 5px;
   background-color: #f4f6f7;
   cursor: ns-resize;
-  border-radius: 5px;
 }
 
 #inputBox {
+  flex: 1;
   width: 100%;
   background-color: #fff;
-  height: calc(40% - 5px);
-  min-height: calc(30% - 5px);
-  max-height: calc(50% - 5px);
 }
 #messageInput {
   width: 100%;
@@ -72,4 +78,7 @@ body {
   box-sizing: border-box;
   font-size: 16px;
   resize: none;
+  background-color: #fafafa;
+  outline: none;
+  padding: 15px;
 }
