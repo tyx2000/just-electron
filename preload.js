@@ -28,4 +28,8 @@ contextBridge.exposeInMainWorld("api", {
   showMeetingWindow: () => ipcRenderer.invoke("showMeetingWindow"),
 
   queryMessageFromDB: () => ipcRenderer.invoke("queryMessageFromDB"),
+
+  pickFile: (type) => ipcRenderer.invoke("pickFile", type),
+
+  showCaptureWindow: () => ipcRenderer.invoke("showCaptureWindow"),
 });

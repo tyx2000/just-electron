@@ -6,8 +6,14 @@
 let clientId = null;
 let latestMessageFromSocketId = null;
 const messages = document.getElementById("messages");
-const inputBox = document.getElementById("inputBox");
-const textarea = document.getElementById("messageInput");
+const messageInput = document.getElementById("messageInput");
+
+const pickImageButton = document.getElementById("pickImage");
+const captureButton = document.getElementById("capture");
+const pickFileButton = document.getElementById("pickFile");
+const chatHistoryButton = document.getElementById("chatHistory");
+const meetingButton = document.getElementById("meeting");
+const sharedDocumentsButton = document.getElementById("sharedDocuments");
 
 // const divider = document.getElementById("divider");
 // divider.addEventListener("mousedown", (e) => {
@@ -33,11 +39,11 @@ const textarea = document.getElementById("messageInput");
 //   document.addEventListener("mouseup", onMouseUp);
 // });
 
-textarea.addEventListener("keydown", async (e) => {
-  console.log(e);
+messageInput.addEventListener("keydown", async (e) => {
   if (e.key === "Enter" && !e.shiftKey) {
     e.preventDefault();
-    const message = textarea.value.trim();
+    // todo 使用div contenteditable作为输入框时，需要获取innerText/innerHTML
+    const message = messageInput.value.trim();
     if (message) {
       const msg = {
         type: "chat-message",
@@ -50,10 +56,37 @@ textarea.addEventListener("keydown", async (e) => {
       if (success) {
         insertMessageToChat("sent", msg);
       }
-      textarea.value = ""; // Clear the input box after sending
+      messageInput.value = ""; // Clear the input box after sending
     }
   }
 });
+
+pickImageButton.onclick = async () => {
+  const filePaths = await window.api.pickFile("Images");
+  if (filePaths && Array.isArray(filePaths) && filePaths.length) {
+    // todo 文件消息 存储 显示 还原
+    filePaths.forEach((filePath) => {
+      const imageEl = document.createElement("img");
+      imageEl.className = "messageInputImage";
+      imageEl.src = filePath;
+      messageInput.appendChild(imageEl);
+    });
+  }
+};
+pickFileButton.onclick = async () => {
+  const filePaths = await window.api.pickFile("All Files");
+  console.log("all files", filePaths);
+};
+
+captureButton.onclick = () => {
+  window.api.showCaptureWindow();
+};
+chatHistoryButton.onclick = () => {};
+
+meetingButton.onclick = () => {
+  window.api.showMeetingWindow();
+};
+sharedDocumentsButton.onclick = () => {};
 
 /**
  * Inserts a message into the chat window.
@@ -82,7 +115,11 @@ const insertMessageToChat = (type, message) => {
       .slice(0, 19)}</div><div class="messageContent">${content}</div>`;
     messages.appendChild(el);
   }
-  messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
+  // messages.scrollTop = messages.scrollHeight; // Scroll to the bottom
+  messages.scrollTo({
+    top: messages.scrollHeight,
+    behavior: "smooth",
+  });
 };
 
 const handleSocketMessage = (data) => {
@@ -98,10 +135,9 @@ const handleSocketMessage = (data) => {
   }
 };
 
-const queryAllMessages = async () => {
+const renderPreviousMessages = async () => {
   const rows = await window.api.queryMessageFromDB();
   rows.forEach((row) => {
-    console.log({ row });
     insertMessageToChat("received", {
       from: row.from_socket_id,
       timestamp: row.message_timestamp,
@@ -132,6 +168,6 @@ const initWebSocket = async () => {
 };
 
 window.addEventListener("DOMContentLoaded", async () => {
-  queryAllMessages();
+  renderPreviousMessages();
   await initWebSocket();
 });

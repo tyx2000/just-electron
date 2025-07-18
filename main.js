@@ -13,15 +13,18 @@ function createWindow() {
     },
   });
 
+  win.label = "chat";
+
   win.loadFile("index.html");
 
   win.webContents.openDevTools();
+
+  return win;
 }
 
 app.whenReady().then(() => {
-  registerIpc();
-
-  createWindow();
+  const win = createWindow();
+  registerIpc(win);
 
   session.defaultSession.setDisplayMediaRequestHandler(
     (request, callback) => {

@@ -1,6 +1,7 @@
-const { BrowserWindow } = require("electron");
+const { BrowserWindow, dialog, desktopCapturer } = require("electron");
 const WebSocket = require("ws");
 const path = require("node:path");
+const fs = require("node:fs");
 
 const sqlite = require("better-sqlite3");
 const db = sqlite(path.join(__dirname, "chat-messages.db"), {
@@ -15,13 +16,31 @@ db.exec(`CREATE TABLE IF NOT EXISTS messages (
   message_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 )`);
 
-const insertStatement = db.prepare(`
+db.exec(`CREATE TABLE IF NOT EXISTS message_files (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  message_id INTEGER NOT NULL,
+  file_name TEXT NOT NULL,
+  file_type TEXT NOT NULL,
+  file_size INTEGER NOT NULL,
+  file_content BLOB NOT NULL
+)`);
+
+const insertMessageStatement = db.prepare(`
   INSERT INTO messages (type, from_socket_id, to_socket_id, content, message_timestamp)
   VALUES (?, ?, ?, ?, ?)
 `);
 
-const queryStatement = db.prepare(`
+const deleteMessageStatement = db.prepare(`
+  DELETE FROM messages WHERE id = ?
+`);
+
+const queryAllMessagesStatement = db.prepare(`
   SELECT * FROM messages ORDER BY message_timestamp ASC
+`);
+
+const insertFileStatement = db.prepare(`
+  INSERT INTO message_files (message_id, file_name, file_type, file_size, file_content)
+  VALUES (?, ?, ?, ?, ?)
 `);
 
 const clients = new Map();
@@ -86,6 +105,28 @@ function closeWebSocketConnection(_, socketId) {
 }
 
 function showMeetingWindow() {
+  // const openedWindows = BrowserWindow.getAllWindows().map((win) => ({
+  //   id: win.id,
+  //   label: win.label,
+  // title: win.getTitle(),
+  // isVisible: win.isVisible(),
+  // isFocused: win.isFocused(),
+  // isMaximized: win.isMaximized(),
+  // isMinimized: win.isMinimized(),
+  // isFullScreen: win.isFullScreen(),
+  // bounds: win.getBounds(),
+  // webContentsId: win.webContents.id,
+  // }));
+
+  // if meeting window already exists, focus it
+  const existingMeetingWindow = BrowserWindow.getAllWindows().find(
+    (win) => win.label === "meeting",
+  );
+  if (existingMeetingWindow) {
+    existingMeetingWindow.focus();
+    return;
+  }
+
   const meetingWindow = new BrowserWindow({
     width: 800,
     height: 600,
@@ -99,6 +140,8 @@ function showMeetingWindow() {
       preload: path.join(__dirname, "preload.js"),
     },
   });
+
+  meetingWindow.label = "meeting";
 
   // cloudflare SSL/TLS flexible
   // 另外 http下 getDisplayMedia失效
@@ -121,6 +164,21 @@ function showMeetingWindow() {
   meetingWindow.show();
 }
 
+function getFileMimeType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const mimeMap = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".pdf": "application/pdf",
+    ".txt": "text/plain",
+    ".docx":
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  };
+  return mimeMap[ext] || "application/octet-stream";
+}
+
 /**
  *
  * @param {*} _ ignore
@@ -131,22 +189,95 @@ function showMeetingWindow() {
  *  to: "socketId",
  *  content: "message content",
  *  timestamp: Date.now(),
+ *  filePaths: 当消息包含文件时，文件的路径数组
  * }
  */
 function insertMessageToDB(message) {
-  console.log("insertMessageToDB", message);
-  insertStatement.run([
+  const result = insertMessageStatement.run([
     message.type,
     message.from,
     message.to,
     message.content,
     message.timestamp,
   ]);
+  if (message.filePaths) {
+    filePaths.forEach((filePath) => {
+      const fileBuffer = fs.readFileSync(filePath);
+      const fileStats = fs.statSync(filePath);
+      const fileName = path.basename(filePath);
+      const fileType = getFileMimeType(filePath);
+      const fileSize = fileStats.size;
+      insertFileStatement.run(
+        result.lastInsertRowid,
+        fileName,
+        fileType,
+        fileSize,
+        fileBuffer,
+      );
+    });
+  }
 }
 function queryMessageFromDB() {
   console.log("queryMessageFromDB invoke");
-  const rows = queryStatement.all();
+  const rows = queryAllMessagesStatement.all();
   return rows;
+}
+
+function queryMessageByKeywordFromDB() {}
+
+async function pickFile(_, { win, type }) {
+  const filters =
+    type === "Images"
+      ? [{ name: "Images", extensions: ["jpg", "jpeg", "png", "gif", "webp"] }]
+      : [{ name: "All Files", extensions: ["*"] }];
+  try {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      properties: ["openFile", "multiSelections"],
+      filters,
+    });
+    return canceled ? null : filePaths;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function showCaptureWindow() {
+  try {
+    const screenSources = await desktopCapturer.getSources({
+      types: ["screen"],
+      thumbnailSize: { width: 3840, height: 2160 },
+    });
+    console.log({ screenSources });
+    const mainScreen = screenSources.find(
+      (source) => source.name === "Entire Screen",
+    );
+    if (!mainScreen) {
+      console.log("unable to get screen source");
+    } else {
+      const screenShotWindow = new BrowserWindow({
+        width: mainScreen.bounds.width,
+        height: mainScreen.bounds.height,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true,
+        fullscreen: true,
+        hasShadow: false,
+        webPreferences: {
+          nodeIntegration: true,
+          contextIsolation: false,
+        },
+      });
+      // todo 加载选取绘制html
+      // screenShotWindow.loadFile('screenshot.html')
+      // todo 传递屏幕图像数据到选区窗口
+      // screenShotWindow.webContents.on("did-finish-load", () => {
+      //   screenShotWindow.webContents.send(
+      //     "screen-image",
+      //     mainScreen.thumbnail.toDataURL(),
+      //   );
+      // });
+    }
+  } catch (error) {}
 }
 
 module.exports = {
@@ -155,4 +286,7 @@ module.exports = {
   closeWebSocketConnection,
   showMeetingWindow,
   queryMessageFromDB,
+  queryMessageByKeywordFromDB,
+  pickFile,
+  showCaptureWindow,
 };
