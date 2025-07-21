@@ -1,4 +1,10 @@
-const { BrowserWindow, dialog, desktopCapturer } = require("electron");
+const {
+  BrowserWindow,
+  dialog,
+  desktopCapturer,
+  screen,
+  ipcMain,
+} = require("electron");
 const WebSocket = require("ws");
 const path = require("node:path");
 const fs = require("node:fs");
@@ -241,43 +247,66 @@ async function pickFile(_, { win, type }) {
   }
 }
 
+// todo 彻底失败
 async function showCaptureWindow() {
   try {
+    let screenShotWindow = null;
+
+    ipcMain.handle("cancel-selection", () => {
+      screenShotWindow && screenShotWindow.close();
+    });
+
+    const currentDisplay = screen.getDisplayNearestPoint(
+      screen.getCursorScreenPoint(),
+    );
+    const { x, y, width, height } = currentDisplay.bounds;
     const screenSources = await desktopCapturer.getSources({
       types: ["screen"],
-      thumbnailSize: { width: 3840, height: 2160 },
+      thumbnailSize: { width, height },
     });
-    console.log({ screenSources });
+
     const mainScreen = screenSources.find(
-      (source) => source.name === "Entire Screen",
+      (source) => source.name === "Entire screen",
     );
     if (!mainScreen) {
       console.log("unable to get screen source");
     } else {
-      const screenShotWindow = new BrowserWindow({
-        width: mainScreen.bounds.width,
-        height: mainScreen.bounds.height,
+      screenShotWindow = new BrowserWindow({
+        x,
+        y,
+        width,
+        height,
         transparent: true,
         frame: false,
         alwaysOnTop: true,
-        fullscreen: true,
+        fullscreen: false,
+        fullscreenable: true,
+        simpleFullscreen: true,
+        show: false,
         hasShadow: false,
+        titleBarStyle: "hidden",
+        skipTaskbar: true,
         webPreferences: {
           nodeIntegration: true,
           contextIsolation: false,
+          hardwareAcceleration: false,
         },
       });
-      // todo 加载选取绘制html
-      // screenShotWindow.loadFile('screenshot.html')
-      // todo 传递屏幕图像数据到选区窗口
-      // screenShotWindow.webContents.on("did-finish-load", () => {
-      //   screenShotWindow.webContents.send(
-      //     "screen-image",
-      //     mainScreen.thumbnail.toDataURL(),
-      //   );
-      // });
+      screenShotWindow.loadFile("capture.html");
+      screenShotWindow.webContents.on("did-finish-load", () => {
+        screenShotWindow.webContents.send(
+          "screen-image",
+          mainScreen.thumbnail.toDataURL(),
+        );
+      });
+      screenShotWindow.once("ready-to-show", () => {
+        screenShotWindow.show();
+        screenShotWindow.setFullScreen(true);
+      });
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log("captureWindow", error);
+  }
 }
 
 module.exports = {
