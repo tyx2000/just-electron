@@ -22,6 +22,22 @@
         <div contenteditable name="message-input" id="messageInput"></div>
       </div>
     </div>
+    <div id="chatHistoryContainer">
+      <div id="chatHistoryType">
+        <div>全部</div>
+        <div>文件</div>
+        <div>图片与视频</div>
+      </div>
+      <div id="chatHistorySearchInput">
+        <input type="text" id="searchInput" placeholder="搜索聊天记录..." />
+        <button id="searchButton">搜索</button>
+      </div>
+      <div id="chatHistoryFilters">
+        <div id="messageSender">发送人</div>
+        <div id="messageDate">发送日期</div>
+      </div>
+      <div id="chatHistorySearchResult"></div>
+    </div>
     <!-- <button id="setting-button">Setting</button> -->
     <script src="./renderer.js"></script>
   </body>

@@ -9,11 +9,14 @@ const messages = document.getElementById("messages");
 const messageInput = document.getElementById("messageInput");
 
 const pickImageButton = document.getElementById("pickImage");
-const captureButton = document.getElementById("capture");
+// const captureButton = document.getElementById("capture");
 const pickFileButton = document.getElementById("pickFile");
 const chatHistoryButton = document.getElementById("chatHistory");
 const meetingButton = document.getElementById("meeting");
 const sharedDocumentsButton = document.getElementById("sharedDocuments");
+
+const chatHistoryContainer = document.getElementById("chatHistoryContainer");
+const chatHistoryType = document.getElementById("chatHistoryType");
 
 // const divider = document.getElementById("divider");
 // divider.addEventListener("mousedown", (e) => {
@@ -78,10 +81,21 @@ pickFileButton.onclick = async () => {
   console.log("all files", filePaths);
 };
 
-captureButton.onclick = () => {
-  window.api.showCaptureWindow();
+// captureButton.onclick = () => {
+//   window.api.showCaptureWindow();
+// };
+chatHistoryButton.onclick = () => {
+  chatHistoryContainer.style.display =
+    chatHistoryContainer.style.display === "none" ? "flex" : "none";
 };
-chatHistoryButton.onclick = () => {};
+
+Array.from(chatHistoryType.children).forEach((el, index) => {
+  el.onclick = (e) => {
+    e.preventDefault();
+    console.log("chatHistoryType", e.target.innerText, index);
+    el.style.borderColor = "#1FA5F7";
+  };
+});
 
 meetingButton.onclick = () => {
   window.api.showMeetingWindow();

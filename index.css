@@ -6,9 +6,11 @@
 
 body {
   overflow-x: hidden;
+  display: flex;
 }
 
 #container {
+  flex: 1;
   height: 100vh;
   overflow: hidden;
   display: flex;
@@ -16,6 +18,78 @@ body {
   align-items: center;
   justify-content: center;
   background-color: #f0f0f0;
+}
+
+#chatHistoryContainer {
+  width: 30%;
+  border-left: 1px solid #ccc;
+  display: none;
+  flex-direction: column;
+  background-color: #f4f6f7;
+  padding: 15px;
+  gap: 15px;
+  align-items: center;
+}
+
+#chatHistoryType {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  font-size: 14px;
+  border-bottom: 5px solid transparent;
+  transition: all linear 0.3s;
+}
+
+#chatHistorySearchInput {
+  width: 100%;
+  height: 30px;
+  border-radius: 5px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  input {
+    flex: 1;
+    height: 30px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    outline: none;
+    padding: 0 10px;
+  }
+  button {
+    padding: 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    height: 30px;
+  }
+}
+
+#chatHistoryFilters {
+  width: 100%;
+  height: 30px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  div {
+    padding: 0 10px;
+    border-radius: 5px;
+    transition: all linear 0.3s;
+    text-align: left;
+    height: 30px;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 30px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #1fa5f7;
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
 }
 
 #messages {
