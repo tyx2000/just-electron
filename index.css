@@ -37,8 +37,11 @@ body {
   align-items: center;
   gap: 30px;
   font-size: 14px;
-  border-bottom: 5px solid transparent;
-  transition: all linear 0.3s;
+  div {
+    padding: 5px 10px;
+    border-bottom: 3px solid transparent;
+    transition: all linear 0.3s;
+  }
 }
 
 #chatHistorySearchInput {
