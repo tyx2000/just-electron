@@ -10,6 +10,7 @@ const {
   showCaptureWindow,
   queryAllMessageSenders,
   showAllSendersOption,
+  showSharedDocumentWindow,
 } = require("./ipc-service");
 
 module.exports = function (win) {
@@ -34,4 +35,6 @@ module.exports = function (win) {
   ipcMain.handle("queryAllMessageSenders", queryAllMessageSenders);
 
   ipcMain.handle("showAllSendersOption", showAllSendersOption);
+
+  ipcMain.handle("showSharedDocumentWindow", showSharedDocumentWindow);
 };

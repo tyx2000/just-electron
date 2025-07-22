@@ -160,7 +160,9 @@ messageDate.onclick = () => {
 meetingButton.onclick = () => {
   window.api.showMeetingWindow();
 };
-sharedDocumentsButton.onclick = () => {};
+sharedDocumentsButton.onclick = () => {
+  window.api.showSharedDocumentWindow();
+};
 
 const renderChatHistorySearchResult = (rows) => {
   chatHistorySearchResult.innerHTML = ""; // Clear previous results
@@ -248,6 +250,7 @@ const initWebSocket = async () => {
     window.api.onWebSocketStateActive(socketId, "Open", (socketId) => {
       clientId = socketId;
       console.log("websocket OPEN", socketId);
+      // todo heartbeat pkg to keep connection alive
     });
     window.api.onWebSocketStateActive(socketId, "Close", () => {
       console.log("websocket CLOSE");

@@ -413,6 +413,38 @@ function showAllSendersOption(event) {
   menu.popup({ window: BrowserWindow.getFocusedWindow() });
 }
 
+function showSharedDocumentWindow() {
+  const existingSharedDocumentWindow = BrowserWindow.getAllWindows().find(
+    (win) => win.label === "shared-document",
+  );
+  if (existingSharedDocumentWindow) {
+    existingSharedDocumentWindow.focus();
+    return;
+  }
+
+  const sharedDocumentWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    modal: true,
+    show: false,
+    webPreferences: {
+      // preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  sharedDocumentWindow.label = "shared-document";
+
+  sharedDocumentWindow.loadFile("shared-document.html");
+
+  sharedDocumentWindow.webContents.openDevTools();
+
+  sharedDocumentWindow.on("ready-to-show", () => {
+    sharedDocumentWindow.show();
+  });
+}
+
 module.exports = {
   createWebSocketConnection,
   sendWebSocketMessage,
@@ -424,4 +456,5 @@ module.exports = {
   showCaptureWindow,
   queryAllMessageSenders,
   showAllSendersOption,
+  showSharedDocumentWindow,
 };

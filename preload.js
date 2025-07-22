@@ -44,4 +44,7 @@ contextBridge.exposeInMainWorld("api", {
       callback(sender);
     });
   },
+
+  showSharedDocumentWindow: () =>
+    ipcRenderer.invoke("showSharedDocumentWindow"),
 });
