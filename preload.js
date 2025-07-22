@@ -29,7 +29,19 @@ contextBridge.exposeInMainWorld("api", {
 
   queryMessageFromDB: () => ipcRenderer.invoke("queryMessageFromDB"),
 
+  queryAllMessageSenders: () => ipcRenderer.invoke("queryAllMessageSenders"),
+
+  queryMessageByKeywordFromDB: (filterType, filterArgs) =>
+    ipcRenderer.invoke("queryMessageByKeywordFromDB", filterType, filterArgs),
+
   pickFile: (type) => ipcRenderer.invoke("pickFile", type),
 
   showCaptureWindow: () => ipcRenderer.invoke("showCaptureWindow"),
+
+  showAllSendersOption: (callback) => {
+    ipcRenderer.invoke("showAllSendersOption");
+    ipcRenderer.on("selectSender", (_, sender) => {
+      callback(sender);
+    });
+  },
 });

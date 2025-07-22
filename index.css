@@ -22,12 +22,12 @@ body {
 
 #chatHistoryContainer {
   width: 30%;
+  height: 100vh;
   border-left: 1px solid #ccc;
   display: none;
   flex-direction: column;
   background-color: #f4f6f7;
-  padding: 15px;
-  gap: 15px;
+  gap: 10px;
   align-items: center;
 }
 
@@ -38,9 +38,13 @@ body {
   gap: 30px;
   font-size: 14px;
   div {
+    cursor: pointer;
     padding: 5px 10px;
     border-bottom: 3px solid transparent;
-    transition: all linear 0.3s;
+    transition: all linear 0.1s;
+    &:first-child {
+      border-bottom-color: #1fa5f7;
+    }
   }
 }
 
@@ -53,6 +57,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+  padding: 0 15px;
 
   input {
     flex: 1;
@@ -67,6 +72,7 @@ body {
     border: 1px solid #ccc;
     border-radius: 3px;
     height: 30px;
+    cursor: pointer;
   }
 }
 
@@ -77,10 +83,11 @@ body {
   justify-content: flex-start;
   align-items: center;
   gap: 15px;
+  padding: 0 15px;
   div {
     padding: 0 10px;
     border-radius: 5px;
-    transition: all linear 0.3s;
+    transition: all linear 0.1s;
     text-align: left;
     height: 30px;
     font-size: 14px;
@@ -91,6 +98,42 @@ body {
     color: #1fa5f7;
     &:hover {
       background-color: #e0e0e0;
+    }
+  }
+}
+
+#chatHistorySearchResult {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden auto;
+  padding: 0 15px;
+
+  .chatHistoryItem {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+    cursor: pointer;
+    transition: background-color linear 0.1s;
+
+    &:hover {
+      background-color: #f0f0f0;
+    }
+
+    .chatHistoryItemInfo {
+      margin-bottom: 5px;
+      font-size: 12px;
+      color: grey;
+    }
+
+    .chatHistoryContent {
+      font-size: 14px;
+      word-break: break-word;
+      max-width: 100%;
     }
   }
 }
@@ -166,7 +209,7 @@ body {
     padding: 3px 10px;
     border-radius: 2px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.1s ease;
     font-size: 12px;
   }
 }

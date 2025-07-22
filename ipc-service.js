@@ -4,6 +4,7 @@ const {
   desktopCapturer,
   screen,
   ipcMain,
+  Menu,
 } = require("electron");
 const WebSocket = require("ws");
 const path = require("node:path");
@@ -40,8 +41,41 @@ const deleteMessageStatement = db.prepare(`
   DELETE FROM messages WHERE id = ?
 `);
 
+const queryAllMessageSendersStatement = db.prepare(`
+  SELECT DISTINCT from_socket_id FROM messages
+`);
+
 const queryAllMessagesStatement = db.prepare(`
-  SELECT * FROM messages ORDER BY message_timestamp ASC
+  SELECT * FROM messages 
+  WHERE
+    (? IS NULL OR message_timestamp >= datetime(?)) AND
+    (? IS NULL OR message_timestamp <= datetime(?)) AND
+    (? IS NULL OR from_socket_id LIKE '%' || ? || '%') AND
+    (? IS NULL OR content LIKE '%' || ? || '%')
+  ORDER BY message_timestamp ASC
+`);
+
+const queryMessageWithFilesStatement = db.prepare(`
+  SELECT DISTINCT m.* FROM messages m
+  INNER JOIN message_files f ON m.id = f.message_id
+  WHERE
+    (? IS NULL OR message_timestamp >= datetime(?)) AND
+    (? IS NULL OR message_timestamp <= datetime(?)) AND
+    (? IS NULL OR from_socket_id LIKE '%' || ? || '%') AND
+    (? IS NULL OR content LIKE '%' || ? || '%')
+  ORDER BY message_timestamp ASC
+`);
+
+const queryMessageWithImageVideoStatement = db.prepare(`
+  SELECT DISTINCT m.* FROM messages m
+  INNER JOIN message_files f ON m.id = f.message_id
+  WHERE
+    (f.file_type LIKE 'image/%' OR f.file_type LIKE 'video/%') AND
+    (? IS NULL OR message_timestamp <= datetime(?)) AND
+    (? IS NULL OR message_timestamp >= datetime(?)) AND
+    (? IS NULL OR from_socket_id LIKE '%' || ? || '%') AND
+    (? IS NULL OR content LIKE '%' || ? || '%')
+  ORDER BY message_timestamp ASC
 `);
 
 const insertFileStatement = db.prepare(`
@@ -224,23 +258,80 @@ function insertMessageToDB(message) {
   }
 }
 function queryMessageFromDB() {
-  console.log("queryMessageFromDB invoke");
-  const rows = queryAllMessagesStatement.all();
+  const rows = queryAllMessagesStatement.all(
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+  );
   return rows;
 }
 
-function queryMessageByKeywordFromDB() {}
+function queryAllMessageSenders() {
+  const rows = queryAllMessageSendersStatement.all();
+  return rows.map((row) => row.from_socket_id);
+}
 
-async function pickFile(_, { win, type }) {
+function queryMessageByKeywordFromDB(filterType, filterArgs) {
+  const { sender, date, contentKeyword } = filterArgs;
+  console.log({ filterType, filterArgs });
+  let rows = [];
+  if (filterType === "all") {
+    rows = queryAllMessagesStatement.all(
+      null,
+      null,
+      null,
+      null,
+      sender,
+      sender,
+      contentKeyword,
+      contentKeyword,
+    );
+  } else if (filterType === "file") {
+    rows = queryMessageWithFilesStatement.all(
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      contentKeyword,
+      contentKeyword,
+    );
+  } else if (filterType === "imageVideo") {
+    rows = queryMessageWithImageVideoStatement.all(
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      contentKeyword,
+      contentKeyword,
+    );
+  } else {
+    console.log("unknown filter type", filterType);
+  }
+  return rows;
+}
+
+async function pickFile(type) {
   const filters =
     type === "Images"
       ? [{ name: "Images", extensions: ["jpg", "jpeg", "png", "gif", "webp"] }]
       : [{ name: "All Files", extensions: ["*"] }];
   try {
-    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
-      properties: ["openFile", "multiSelections"],
-      filters,
-    });
+    const { canceled, filePaths } = await dialog.showOpenDialog(
+      BrowserWindow.getFocusedWindow(),
+      {
+        properties: ["openFile", "multiSelections"],
+        filters,
+      },
+    );
     return canceled ? null : filePaths;
   } catch (error) {
     console.log(error);
@@ -309,6 +400,19 @@ async function showCaptureWindow() {
   }
 }
 
+function showAllSendersOption(event) {
+  const senders = queryAllMessageSenders();
+  const menu = Menu.buildFromTemplate(
+    senders.map((sender) => ({
+      label: sender.split("-")[1].slice(0, 10), // 显示前10个字符
+      click: () => {
+        event.sender.send("selectSender", sender);
+      },
+    })),
+  );
+  menu.popup({ window: BrowserWindow.getFocusedWindow() });
+}
+
 module.exports = {
   createWebSocketConnection,
   sendWebSocketMessage,
@@ -318,4 +422,6 @@ module.exports = {
   queryMessageByKeywordFromDB,
   pickFile,
   showCaptureWindow,
+  queryAllMessageSenders,
+  showAllSendersOption,
 };

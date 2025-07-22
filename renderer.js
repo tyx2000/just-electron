@@ -17,6 +17,12 @@ const sharedDocumentsButton = document.getElementById("sharedDocuments");
 
 const chatHistoryContainer = document.getElementById("chatHistoryContainer");
 const chatHistoryType = document.getElementById("chatHistoryType");
+const chatHistorySearchButton = document.getElementById("searchButton");
+const messageSender = document.getElementById("messageSender");
+const messageDate = document.getElementById("messageDate");
+const chatHistorySearchResult = document.getElementById(
+  "chatHistorySearchResult",
+);
 
 // const divider = document.getElementById("divider");
 // divider.addEventListener("mousedown", (e) => {
@@ -84,23 +90,98 @@ pickFileButton.onclick = async () => {
 // captureButton.onclick = () => {
 //   window.api.showCaptureWindow();
 // };
-chatHistoryButton.onclick = () => {
-  chatHistoryContainer.style.display =
-    chatHistoryContainer.style.display === "none" ? "flex" : "none";
+chatHistoryButton.onclick = async () => {
+  const styles = getComputedStyle(chatHistoryContainer);
+  const display = styles.getPropertyValue("display");
+  if (display === "none" || display === "") {
+    chatHistoryContainer.style.display = "flex";
+    // [{ from_socket_id, timestamp, content }]
+    const rows = await window.api.queryMessageFromDB();
+    renderChatHistorySearchResult(rows);
+  } else {
+    chatHistoryContainer.style.display = "none";
+  }
 };
 
-Array.from(chatHistoryType.children).forEach((el, index) => {
+const chatHistoryTypeItems = Array.from(chatHistoryType.children);
+chatHistoryTypeItems.forEach((el) => {
   el.onclick = (e) => {
     e.preventDefault();
-    console.log("chatHistoryType", e.target.innerText, index);
-    el.style.borderColor = "#1FA5F7";
+    chatHistoryTypeItems.forEach((item) => {
+      item.style.borderBottomColor = "transparent";
+    });
+    el.style.borderBottomColor = "#1fa5f7";
   };
 });
+
+chatHistorySearchButton.onclick = async () => {
+  const filterIndex = chatHistoryTypeItems.findIndex(
+    (item) => item.style.borderBottomColor !== "transparent",
+  );
+  const filterType =
+    { 0: "all", 1: "file", 2: "imageVideo" }[filterIndex] || "all";
+  const keyword = document.getElementById("searchInput").value.trim();
+  const sender =
+    messageSender.innerText.length === 10 ? messageSender.innerText : null;
+
+  const rows = await window.api.queryMessageByKeywordFromDB(filterType, {
+    sender,
+    date: messageDate.innerText || "",
+    contentKeyword: keyword,
+  });
+  renderChatHistorySearchResult(rows);
+};
+
+messageSender.onclick = async () => {
+  // const offset = messageSender.getBoundingClientRect();
+  // console.log({ offset });
+  window.api.showAllSendersOption((socketId) => {
+    messageSender.innerText = socketId.split("-")[1].slice(0, 10);
+  });
+  // const senderList = await window.api.queryAllMessageSenders();
+  // const senderListHtml = `<div class="senderListContainer">${senderList
+  //   .map(
+  //     (sender) =>
+  //       `<div class="senderListItem">${sender
+  //         .split("-")[1]
+  //         .slice(0, 10)}</div>`,
+  //   )
+  //   .join("")}</div>`;
+  // messageSender.insertAdjacentHTML("beforeend", senderListHtml);
+};
+messageDate.onclick = () => {
+  // 通过全局定位显示菜单
+  // const offset = messageDate.getBoundingClientRect();
+  // console.log({ offset });
+  // 通过相对定位显示菜单
+  // messageDate.insertAdjacentHTML("beforeend");
+};
 
 meetingButton.onclick = () => {
   window.api.showMeetingWindow();
 };
 sharedDocumentsButton.onclick = () => {};
+
+const renderChatHistorySearchResult = (rows) => {
+  chatHistorySearchResult.innerHTML = ""; // Clear previous results
+  if (!rows || rows.length === 0) {
+    chatHistorySearchResult.innerHTML =
+      "<div class='noResults'>No results found</div>";
+    return;
+  }
+  let resHtml = "";
+  rows.forEach((row) => {
+    resHtml += `<div class="chatHistoryItem"><div class="chatHistoryItemInfo">${row.from_socket_id
+      .split("-")[1]
+      .slice(0, 10)} ${new Date(row.message_timestamp)
+      .toISOString()
+      .replace("T", " ")
+      .slice(0, 19)}</div><div class="chatHistoryContent">${
+      row.content
+    }</div></div>`;
+  });
+  chatHistorySearchResult.innerHTML = resHtml;
+};
 
 /**
  * Inserts a message into the chat window.

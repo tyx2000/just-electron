@@ -5,8 +5,11 @@ const {
   closeWebSocketConnection,
   showMeetingWindow,
   queryMessageFromDB,
+  queryMessageByKeywordFromDB,
   pickFile,
   showCaptureWindow,
+  queryAllMessageSenders,
+  showAllSendersOption,
 } = require("./ipc-service");
 
 module.exports = function (win) {
@@ -20,7 +23,15 @@ module.exports = function (win) {
 
   ipcMain.handle("queryMessageFromDB", queryMessageFromDB);
 
-  ipcMain.handle("pickFile", (_, type) => pickFile(null, { win, type }));
+  ipcMain.handle("queryMessageByKeywordFromDB", (_, filterType, filterArgs) =>
+    queryMessageByKeywordFromDB(filterType, filterArgs),
+  );
+
+  ipcMain.handle("pickFile", (_, type) => pickFile(type));
 
   ipcMain.handle("showCaptureWindow", showCaptureWindow);
+
+  ipcMain.handle("queryAllMessageSenders", queryAllMessageSenders);
+
+  ipcMain.handle("showAllSendersOption", showAllSendersOption);
 };
